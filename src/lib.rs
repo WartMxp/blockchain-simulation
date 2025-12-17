@@ -5,11 +5,110 @@ mod sha;
 mod pow;
 
 use std::{process, time::SystemTime, io};
+use std::env;
 use crate::{pow::PoW, sha::sha_256};
 use serde::{Serialize, Deserialize};
 use store::{load_json, save_json};
 
 pub const CHAIN_PATH: &str = "src/data/chain.json";
+
+/// CLI
+pub enum CliCommand {
+    AddBlock { data: String },
+    PrintChain,
+}
+
+/// 从参数列表解析命令；-data 后面的所有内容被拼成 data
+fn parse_cli_args(args: impl IntoIterator<Item = String>) -> anyhow::Result<CliCommand> {
+    let args: Vec<String> = args.into_iter().collect();
+
+    // 命令可能在 0（REPL）或 1（普通 CLI，0 是二进制名）
+    let cmd_idx = match args.get(0).map(|s| s.as_str()) {
+        Some("addblock") | Some("printchain") => 0,
+        _ => 1,
+    };
+    let cmd = args.get(cmd_idx).ok_or_else(|| anyhow::anyhow!(
+        "Usage:\n  addblock -data \"Send 1 BTC to Ivan\"\n  printchain"
+    ))?;
+    let rest = &args[(cmd_idx + 1)..];
+
+    match cmd.as_str() {
+        "addblock" => {
+            let data_pos = rest.iter().position(|s| s == "-data")
+                .ok_or_else(|| anyhow::anyhow!("missing -data <payload>"))?;
+            let data_tokens = &rest[(data_pos + 1)..];
+            let data = data_tokens.join(" ").trim_matches('"').to_string();
+            if data.is_empty() {
+                return Err(anyhow::anyhow!("missing -data <payload>"));
+            }
+            Ok(CliCommand::AddBlock { data })
+        }
+        "printchain" => Ok(CliCommand::PrintChain),
+        _ => Err(anyhow::anyhow!(
+            "Usage:\n  addblock -data \"Send 1 BTC to Ivan\"\n  printchain"
+        )),
+    }
+}
+
+/// 执行解析后的命令
+fn execute_command(cmd: CliCommand) -> anyhow::Result<()> {
+    match cmd {
+        CliCommand::AddBlock { data } => {
+            let mut chain = load_chain_or_init(CHAIN_PATH)?;
+            let prev_hash = chain
+                .last()
+                .map(|b| b.hash.clone())
+                .unwrap_or_else(|| "0x0".to_string());
+            chain.push(Block::new(data, prev_hash));
+            persist_chain(CHAIN_PATH, &chain)?;
+            println!("Block added. Chain length: {}", chain.len());
+        }
+        CliCommand::PrintChain => {
+            let chain = load_chain_or_init(CHAIN_PATH)?;
+            for block in chain.iter() {
+                print_block(block);
+            }
+        }
+    }
+    Ok(())
+}
+
+/// CLI_START
+pub fn run_cli() -> anyhow::Result<()> {
+    let cmd = parse_cli_args(env::args())?;
+    execute_command(cmd)
+}
+
+/// 简易交互
+pub fn run_repl() -> anyhow::Result<()> {
+    println!("Enter command: addblock -data \"...\" | printchain | exit");
+    let stdin = io::stdin();
+    let mut line = String::new();
+    loop {
+        line.clear();
+        let n = stdin.read_line(&mut line)?;
+        if n == 0 {
+            break; // EOF
+        }
+        let trimmed = line.trim();
+        if trimmed.is_empty() {
+            continue;
+        }
+        if trimmed.eq_ignore_ascii_case("exit") || trimmed.eq_ignore_ascii_case("quit") {
+            break;
+        }
+        let tokens: Vec<String> = trimmed.split_whitespace().map(|s| s.to_string()).collect();
+        match parse_cli_args(tokens) {
+            Ok(cmd) => {
+                if let Err(err) = execute_command(cmd) {
+                    eprintln!("Error: {}", err);
+                }
+            }
+            Err(err) => eprintln!("{}", err),
+        }
+    }
+    Ok(())
+}
 
 #[derive(Serialize, Deserialize, Debug, Clone)]
 pub struct Block {

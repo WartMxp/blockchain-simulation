@@ -1,22 +1,11 @@
-use blockchain_simulation::{
-    Block, print_block, load_chain_or_init, persist_chain, CHAIN_PATH,
-};
+use blockchain_simulation::{run_cli, run_repl};
+use std::env;
 
 fn main() -> anyhow::Result<()> {
-    let mut blockchain = load_chain_or_init(CHAIN_PATH)?;
-
-    let prev = blockchain
-        .last()
-        .map(|b| b.hash.clone())
-        .unwrap_or_else(|| "0x0".to_string());
-
-    blockchain.push(Block::new("Normal block", prev));
-    persist_chain(CHAIN_PATH, &blockchain)?;
-
-    for block in blockchain.iter() {
-        print_block(block);
+    // 如果有参数则直接解析；否则进入交互模式
+    if env::args().len() > 1 {
+        run_cli()
+    } else {
+        run_repl()
     }
-    Ok(())
 }
-
-

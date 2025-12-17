@@ -1,3 +1,4 @@
 /target
-
 /src/data/*.json
+# keep local blockchain state out of git
+/src/data/chain.json

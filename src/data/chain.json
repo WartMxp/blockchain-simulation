@@ -19,5 +19,12 @@
     "prev_block_hash": "0x000029b4f6f107fb106a1748cd8327f1",
     "hash": "0x00007e04440fbbbf6655a81f557c9db4",
     "nonce": 29870
+  },
+  {
+    "time_stamp": 1765969254,
+    "data": "Normal block",
+    "prev_block_hash": "0x00007e04440fbbbf6655a81f557c9db4",
+    "hash": "0x0000225a35efb4744652f05db7095274",
+    "nonce": 44118
   }
 ]
