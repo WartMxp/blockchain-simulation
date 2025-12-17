@@ -1,4 +1,6 @@
 mod store;
+#[cfg(test)]
+mod tests;
 mod sha;
 mod pow;
 
