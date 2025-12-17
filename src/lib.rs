@@ -30,8 +30,6 @@ impl Block {
 
         // set timestamp before mining so PoW can use it
         block.set_hash();
-
-        // create PoW from a clone so we can keep ownership of `block`
         let pow = PoW::new(block.clone());
         let (nonce, hash) = pow.pow_done();
         block.nonce = nonce;
