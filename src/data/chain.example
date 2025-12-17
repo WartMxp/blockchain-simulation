@@ -1,0 +1,16 @@
+[
+  {
+    "time_stamp": ,
+    "data": "Genesis Block",
+    "prev_block_hash": "0x0",
+    "hash": "",
+    "nonce": 
+  },
+  {
+    "time_stamp": ,
+    "data": "Normal block",
+    "prev_block_hash": "",
+    "hash": "",
+    "nonce": 
+  }
+]

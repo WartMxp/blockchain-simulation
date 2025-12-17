@@ -1,19 +1,22 @@
-use blockchain_simulation::{Block, new_blockchain, print_block};
+use blockchain_simulation::{
+    Block, print_block, load_chain_or_init, persist_chain, CHAIN_PATH,
+};
 
-fn main() {
+fn main() -> anyhow::Result<()> {
+    let mut blockchain = load_chain_or_init(CHAIN_PATH)?;
 
-    let mut blockchain = new_blockchain();
-    assert_eq!(blockchain.len(), 1);
+    let prev = blockchain
+        .last()
+        .map(|b| b.hash.clone())
+        .unwrap_or_else(|| "0x0".to_string());
 
-    blockchain.push(Block::new(" normal block ".to_string(), blockchain
-        .get(0)
-        .unwrap()
-        .hash
-        .clone()
-    ));
+    blockchain.push(Block::new("Normal block", prev));
+    persist_chain(CHAIN_PATH, &blockchain)?;
+
     for block in blockchain.iter() {
         print_block(block);
     }
+    Ok(())
 }
 
 

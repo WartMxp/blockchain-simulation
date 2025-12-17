@@ -2,6 +2,10 @@
 
 
 
+### v0.3
+Premature optimization is the root of all evil
+
+
 ### v0.2
 加入了简易的pow，即加入挖矿机制
 

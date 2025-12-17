@@ -1,0 +1,16 @@
+[
+  {
+    "time_stamp": 1765967320,
+    "data": "Genesis Block",
+    "prev_block_hash": "0x0",
+    "hash": "0x0000a6eac4954be24750ae332ec60ee1",
+    "nonce": 72722
+  },
+  {
+    "time_stamp": 1765967321,
+    "data": "Normal block",
+    "prev_block_hash": "0x0000a6eac4954be24750ae332ec60ee1",
+    "hash": "0x000029b4f6f107fb106a1748cd8327f1",
+    "nonce": 45269
+  }
+]
